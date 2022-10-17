@@ -24,6 +24,7 @@ data_guess = [] # Stores all samples for all days for 'best_guess' model
 data_pess = []  # Stores all samples for all days for 'pessimistic' model
 time_stamp = []
 
+# Builds request url and executes google maps request
 def distance_matrix(origin, destination, api_key, mode, departure_time, traffic_model):
     base_url = "https://maps.googleapis.com/maps/api/distancematrix/json?" 
     params = {'origins': origin, 'destinations': destination, 'units': 'metric', \
@@ -31,6 +32,7 @@ def distance_matrix(origin, destination, api_key, mode, departure_time, traffic_
             'traffic_model': traffic_model, 'avoid': avoid}
     return requests.get(base_url + urllib.parse.urlencode(params))
 
+# Populate reponse list with each traffic model request response
 def get_response(origin, destination, api_key, mode, departure_time, traffic_model):
     for traffic_model in traffic_model:
         response.append(distance_matrix(origin, destination, api_key, mode, \
@@ -66,6 +68,7 @@ def collect_data(response, aux_std, aux_opt, aux_guess, aux_pess):
     aux_guess.append(round(response[1].json()["rows"][0]["elements"][0]["duration_in_traffic"]["value"]/60,1))
     aux_pess.append(round(response[2].json()["rows"][0]["elements"][0]["duration_in_traffic"]["value"]/60,1))
 
+# Display user options
 print("Applications available:")
 print("1. No user input (default settings)\n2. Single query\n3. Predictive query")
 user_input = input("Select application (1-3): ")
@@ -111,7 +114,7 @@ elif user_input == '3':
     sample_days = int(input("Enter number of days: "))
     sample_size = float(sample_days) * SECONDS_DAY
     samples_per_day = int(input("Enter samples per day: "))
-    frequency = SECONDS_DAY / samples_per_day
+    frequency = SECONDS_DAY / samples_per_day   # Time intervale between each request
     end_time = start_time + sample_size
     departure_time = start_time
 
@@ -133,13 +136,13 @@ elif user_input == '3':
         data_guess.append(aux_guess)
         data_pess.append(aux_pess)
 
-    # Create list for the time for each sample
+    # Create list for the time for each sample (used only for chart display)
     t = 0 # time in hours
     for i in range(samples_per_day):
         time_stamp.append(t)
         t += (frequency/3600)
 
-    # Calculate averages
+    # Calculate averages for each traffic model for each day
     for sample in range(samples_per_day):
         avg_std = 0.0
         avg_opt = 0.0
