@@ -1,4 +1,3 @@
-from ntpath import join
 from dotenv import load_dotenv
 import os, requests, time, datetime, csv
 import urllib.parse
@@ -6,8 +5,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-SECONDS_DAY = 86400
-SECONDS_MIN = 60
+SECONDS_DAY = 86400 # number of seconds in a day
+SECONDS_MIN = 60    # number of seconds in a minute
 
 load_dotenv() # take environment variables from .env.
 api_key = os.getenv('API_KEY')
