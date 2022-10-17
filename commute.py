@@ -37,6 +37,7 @@ def get_response(origin, destination, api_key, mode, departure_time, traffic_mod
         response.append(distance_matrix(origin, destination, api_key, mode, \
             departure_time, traffic_model))
 
+# Takes request from google maps in json format and extract the data we want
 def print_response(response, departure_datetime):
     origin = response[0].json()["origin_addresses"][0]
     destination = response[0].json()["destination_addresses"][0]
@@ -52,12 +53,14 @@ def print_response(response, departure_datetime):
     print(f"- Travel Time Best guess: {round(travel_best_guess/60,1)} min")
     print(f"- Travel Time Pessimistic: {round(travel_pessimistic/60,1)} min")
 
+# Take user input as dd mm yy and converts to epoch time
 def convert_datetime(date_ui):
     date_ui = time.strptime(date_ui, "%d %m %y")
     return datetime.datetime(date_ui.tm_year, \
             date_ui.tm_mon, date_ui.tm_mday, date_ui.tm_hour, \
                 date_ui.tm_min, date_ui.tm_sec).timestamp()
 
+# Populates samples for 1 day. Lists are recycled after for each day
 def collect_data(response, aux_std, aux_opt, aux_guess, aux_pess):
     aux_std.append(round(response[0].json()["rows"][0]["elements"][0]["duration"]["value"]/60,1))
     aux_opt.append(round(response[0].json()["rows"][0]["elements"][0]["duration_in_traffic"]["value"]/60,1))
@@ -68,14 +71,16 @@ print("Applications available:")
 print("1. No user input (default settings)\n2. Single query\n3. Predictive query")
 user_input = input("Select application (1-3): ")
 
+# Case 1: Get a quick commute output for whatever you define as HOME and WORK
 if user_input == '1':
     origin = os.getenv('HOME')
     destination = os.getenv('WORK')
     departure_time = time.time()
-    departure_datetime = time.ctime(departure_time)
+    departure_datetime = time.ctime(departure_time) # Datetime just for display
     get_response(origin, destination, api_key, mode, departure_time, traffic_model)
     print_response(response, departure_datetime)
 
+# Case 2: Allows user input for addresses
 elif user_input == '2':
     if input("Avoid tolls? (y/n): ") == 'y':
         avoid = "tolls"
@@ -95,6 +100,7 @@ elif user_input == '2':
     get_response(origin, destination, api_key, mode, departure_time, traffic_model)
     print_response(response, departure_datetime)
 
+# Case 3: Allows user to input time period and frequency to get traffic trends
 elif user_input == '3':
     if input("Avoid tolls? (y/n): ") == 'y':
         avoid = "tolls"
